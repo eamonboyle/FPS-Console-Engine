@@ -2,104 +2,130 @@
 //
 
 #include <iostream>
-#include <Windows.h>
-#include <chrono>
-#include <vector>
 #include <algorithm>
+#include <string>
 
 using namespace std;
 
-int screenWidth = 120;
-int screenHeight = 40;
+#include "olcConsoleGameEngine.h"
 
-float playerX = 8.0f;
-float playerY = 8.0f;
-float playerA = 0.0f;
-
-int mapHeight = 16;
-int mapWidth = 16;
-
-float fov = 3.14159 / 4.0;
-float depth = 16.0f;
-
-int main()
+class UltimateFPS : public olcConsoleGameEngine
 {
-    // create screen buffer
-    wchar_t* screen = new wchar_t[screenWidth * screenHeight];
-    HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-    SetConsoleActiveScreenBuffer(hConsole);
-    DWORD bytesWritten = 0;
-
-    wstring map;
-
-    map += L"################";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..........#...#";
-    map += L"#..........#...#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#.......########";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"################";
-
-    auto tp1 = chrono::system_clock::now();
-    auto tp2 = chrono::system_clock::now();
-
-    // game loop
-    while (1)
+public:
+    UltimateFPS()
     {
-        // calculate frame time
-        tp2 = chrono::system_clock::now();
-        chrono::duration<float> elapsedTimeChrono = tp2 - tp1;
-        tp1 = tp2;
-        float elapsedTime = elapsedTimeChrono.count();
+        m_sAppName = L"Ultimate First Person Shooter";
+    }
 
+    virtual bool OnUserCreate()
+    {
+        map += L"#########.......#########.......";
+        map += L"#...............#...............";
+        map += L"#.......#########.......########";
+        map += L"#..............##..............#";
+        map += L"#......##......##......##......#";
+        map += L"#......##..............##......#";
+        map += L"#..............##..............#";
+        map += L"###............####............#";
+        map += L"##.............###.............#";
+        map += L"#............####............###";
+        map += L"#..............................#";
+        map += L"#..............##..............#";
+        map += L"#..............##..............#";
+        map += L"#...........#####...........####";
+        map += L"#..............................#";
+        map += L"###..####....########....#######";
+        map += L"####.####.......######..........";
+        map += L"#...............#...............";
+        map += L"#.......#########.......##..####";
+        map += L"#..............##..............#";
+        map += L"#......##......##.......#......#";
+        map += L"#......##......##......##......#";
+        map += L"#..............##..............#";
+        map += L"###............####............#";
+        map += L"##.............###.............#";
+        map += L"#............####............###";
+        map += L"#..............................#";
+        map += L"#..............................#";
+        map += L"#..............##..............#";
+        map += L"#...........##..............####";
+        map += L"#..............##..............#";
+        map += L"################################";
+
+
+        return true;
+    }
+
+    virtual bool OnUserUpdate(float elapsedTime)
+    {
         // controls
-        // handle counter clockwise rotation
-        if (GetAsyncKeyState((unsigned short)'A') & 0x8000)
+
+        // rotation
+        if (m_keys[L'A'].bHeld)
         {
             playerA -= (0.8f) * elapsedTime;
         }
-        if (GetAsyncKeyState((unsigned short)'D') & 0x8000)
+        if (m_keys[L'D'].bHeld)
         {
             playerA += (0.8f) * elapsedTime;
         }
 
-        if (GetAsyncKeyState((unsigned short)'W') & 0x8000)
+        // forwards
+        if (m_keys[L'W'].bHeld)
         {
-            playerX += sinf(playerA) * 5.0f * elapsedTime;
-            playerY += cosf(playerA) * 5.0f * elapsedTime;
+            playerX += sinf(playerA) * speed * elapsedTime;
+            playerY += cosf(playerA) * speed * elapsedTime;
 
             if (map[(int)playerY * mapWidth + (int)playerX] == '#')
             {
-                playerX -= sinf(playerA) * 5.0f * elapsedTime;
-                playerY -= cosf(playerA) * 5.0f * elapsedTime;
+                playerX -= sinf(playerA) * speed * elapsedTime;
+                playerY -= cosf(playerA) * speed * elapsedTime;
             }
         }
 
-        if (GetAsyncKeyState((unsigned short)'S') & 0x8000)
+        // backwards
+        if (m_keys[L'S'].bHeld)
         {
-            playerX -= sinf(playerA) * 5.0f * elapsedTime;
-            playerY -= cosf(playerA) * 5.0f * elapsedTime;
+            playerX -= sinf(playerA) * speed * elapsedTime;
+            playerY -= cosf(playerA) * speed * elapsedTime;
 
             if (map[(int)playerY * mapWidth + (int)playerX] == '#')
             {
-                playerX += sinf(playerA) * 5.0f * elapsedTime;
-                playerY += cosf(playerA) * 5.0f * elapsedTime;
+                playerX += sinf(playerA) * speed * elapsedTime;
+                playerY += cosf(playerA) * speed * elapsedTime;
             }
         }
 
-        for (int x = 0; x < screenWidth; x++)
+        // strafe right
+        if (m_keys[L'E'].bHeld)
+        {
+            playerX += cosf(playerA) * speed * elapsedTime;
+            playerY -= sinf(playerA) * speed * elapsedTime;
+
+            if (map.c_str()[(int)playerX * mapWidth + (int)playerY] == '#')
+            {
+                playerX -= cosf(playerA) * speed * elapsedTime;
+                playerY += sinf(playerA) * speed * elapsedTime;
+            }
+        }
+
+        // strafe left
+        if (m_keys[L'Q'].bHeld)
+        {
+            playerX -= cosf(playerA) * speed * elapsedTime;
+            playerY += sinf(playerA) * speed * elapsedTime;
+
+            if (map.c_str()[(int)playerX * mapWidth + (int)playerY] == '#')
+            {
+                playerX += cosf(playerA) * speed * elapsedTime;
+                playerY -= sinf(playerA) * speed * elapsedTime;
+            }
+        }
+
+        for (int x = 0; x < ScreenWidth(); x++)
         {
             // for each column, calculate the projected ray angle into world space
-            float rayAngle = (playerA - fov / 2.0f) + ((float)x / (float)screenWidth) * fov;
+            float rayAngle = (playerA - fov / 2.0f) + ((float)x / (float)ScreenWidth()) * fov;
 
             float distanceToWall = 0.0f;
 
@@ -144,7 +170,7 @@ int main()
                         }
 
                         // sort pairs from closest to farthest
-                        sort(p.begin(), p.end(), [](const pair<float, float>& left, const pair<float, float> &right) { return left.first < right.first; });
+                        sort(p.begin(), p.end(), [](const pair<float, float>& left, const pair<float, float>& right) { return left.first < right.first; });
 
                         float bound = 0.01f;
                         if (acos(p.at(0).second) < bound) boundary = true;
@@ -155,8 +181,8 @@ int main()
             }
 
             // calculate distance to ceiling and floor
-            int ceiling = (float)(screenHeight / 2.0) - screenHeight / ((float)distanceToWall);
-            int floor = screenHeight - ceiling;
+            int ceiling = (float)(ScreenHeight() / 2.0) - ScreenHeight() / ((float)distanceToWall);
+            int floor = ScreenHeight() - ceiling;
 
             // calculate wall distance
             short shade = ' ';
@@ -173,59 +199,68 @@ int main()
                 shade = ' ';
             }
 
-            for (int y = 0; y < screenHeight; y++)
+            for (int y = 0; y < ScreenHeight(); y++)
             {
                 if (y <= ceiling)
                 {
-                    screen[y * screenWidth + x] = ' ';
+                    Draw(x, y, L' ');
                 }
                 else if (y > ceiling&& y <= floor)
                 {
-                    screen[y * screenWidth + x] = shade;
+                    Draw(x, y, shade);
                 }
                 else
                 {
-                    float b = 1.0f - (((float)y - screenHeight / 2.0f) / ((float)screenHeight / 2.0f));
+                    float b = 1.0f - (((float)y - ScreenHeight() / 2.0f) / ((float)ScreenHeight() / 2.0f));
                     if (b < 0.25) shade = '#';
                     else if (b < 0.25) shade = 'x';
                     else if (b < 0.75) shade = '.';
                     else if (b < 0.9) shade = '-';
                     else shade = ' ';
 
-                    screen[y * screenWidth + x] = shade;
+                    Draw(x, y, shade);
                 }
             }
         }
 
         // display stats
-        swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f FPS=%3.2f ", playerX, playerY, playerA, 1.0f / elapsedTime);
+        //swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f FPS=%3.2f ", playerX, playerY, playerA, 1.0f / elapsedTime);
 
         // display map
         for (int nx = 0; nx < mapWidth; nx++)
         {
             for (int ny = 0; ny < mapWidth; ny++)
             {
-                screen[(ny + 1) * screenWidth + nx] = map[ny * mapWidth + nx];
+                Draw(nx + 1, ny + 1, map[ny * mapWidth + nx]);
             }
         }
 
         // show player on map
-        screen[((int)playerY + 1) * screenWidth + (int)playerX] = 'P';
+        Draw(1 + (int)playerY, 1 + (int)playerX, L'P');
 
-        screen[screenWidth * screenHeight - 1] = '\0';
-        WriteConsoleOutputCharacter(hConsole, screen, screenWidth * screenHeight, { 0,0 }, &bytesWritten);
+        return true;
     }
+
+private:
+    float playerX = 8.0f;
+    float playerY = 8.0f;
+    float playerA = 0.0f;
+
+    int mapHeight = 32;
+    int mapWidth = 32;
+
+    float fov = 3.14159 / 4.0;
+    float depth = 16.0f;
+    float speed = 5.0f;
+
+    wstring map;
+};
+
+int main()
+{
+    UltimateFPS game;
+    game.ConstructConsole(320, 240, 4, 4);
+    game.Start();
 
     return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
