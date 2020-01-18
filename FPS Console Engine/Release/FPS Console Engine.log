@@ -1,0 +1,8 @@
+﻿  FPS Console Engine.cpp
+F:\Coding\CPP\FPS Console Engine\FPS Console Engine\FPS Console Engine.cpp(22,26): warning C4305: 'initializing': truncation from 'double' to 'float'
+F:\Coding\CPP\FPS Console Engine\FPS Console Engine\FPS Console Engine.cpp(158,25): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 170 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  FPS Console Engine.vcxproj -> F:\Coding\CPP\FPS Console Engine\Release\FPS Console Engine.exe

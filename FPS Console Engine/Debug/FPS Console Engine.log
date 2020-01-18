@@ -1,0 +1,4 @@
+﻿  FPS Console Engine.cpp
+F:\Coding\CPP\FPS Console Engine\FPS Console Engine\FPS Console Engine.cpp(22,26): warning C4305: 'initializing': truncation from 'double' to 'float'
+F:\Coding\CPP\FPS Console Engine\FPS Console Engine\FPS Console Engine.cpp(158,25): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+  FPS Console Engine.vcxproj -> F:\Coding\CPP\FPS Console Engine\Debug\FPS Console Engine.exe
