@@ -52,8 +52,15 @@ public:
         map += L"#..............##..............#";
         map += L"################################";
 
-        spriteWall = new olcSprite(L"F:\\Coding\\CPP\\FPS Console Engine\\Debug\\FPSSprites\\fps_wall1.spr");
+        spriteWall = new olcSprite(L"fps_wall1.spr");
+        spriteLamp = new olcSprite(L"fps_lamp1.spr");
+        spriteFireball = new olcSprite(L"fps_fireball.spr");
 
+        listObjects = {
+            {8.5f, 8.5f, spriteLamp},
+            {7.5f, 7.5f, spriteLamp},
+            {10.5f, 10.5f, spriteLamp},
+        };
 
         return true;
     }
@@ -192,15 +199,14 @@ public:
                 }
                 else if (y > ceiling&& y <= floor)
                 {
+                    // Draw Wall
                     if (distanceToWall < depth)
                     {
                         float sampleY = ((float)y - (float)ceiling) / ((float)floor - (float)ceiling);
                         Draw(x, y, spriteWall->SampleGlyph(sampleX, sampleY), spriteWall->SampleColour(sampleX, sampleY));
                     }
                     else
-                    {
                         Draw(x, y, PIXEL_SOLID, 0);
-                    }
                 }
                 else
                 {
