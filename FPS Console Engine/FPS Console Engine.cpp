@@ -52,6 +52,8 @@ public:
         map += L"#..............##..............#";
         map += L"################################";
 
+        spriteWall = new olcSprite(L"F:\\Coding\\CPP\\FPS Console Engine\\Debug\\FPSSprites\\fps_wall1.spr");
+
 
         return true;
     }
@@ -127,6 +129,7 @@ public:
             // for each column, calculate the projected ray angle into world space
             float rayAngle = (playerA - fov / 2.0f) + ((float)x / (float)ScreenWidth()) * fov;
 
+            float stepSize = 0.01f;
             float distanceToWall = 0.0f;
 
             bool hitWall = false;
@@ -135,9 +138,11 @@ public:
             float eyeX = sinf(rayAngle);
             float eyeY = cosf(rayAngle);
 
+            float sampleX = 0.0f;
+
             while (!hitWall && distanceToWall < depth)
             {
-                distanceToWall += 0.1f;
+                distanceToWall += stepSize;
 
                 int testX = (int)(playerX + eyeX * distanceToWall);
                 int testY = (int)(playerY + eyeY * distanceToWall);
@@ -155,27 +160,22 @@ public:
                     {
                         hitWall = true;
 
-                        vector<pair<float, float>> p; // distance, dot
+                        float blockMidX = (float)testX + 0.5f;
+                        float blockMidY = (float)testY + 0.5f;
 
-                        for (int tx = 0; tx < 2; tx++)
-                        {
-                            for (int ty = 0; ty < 2; ty++)
-                            {
-                                float vy = (float)testY + ty - playerY;
-                                float vx = (float)testX + tx - playerX;
-                                float d = sqrt(vx * vx + vy * vy);
-                                float dot = (eyeX * vx / d) + (eyeY * vy / d);
-                                p.push_back(make_pair(d, dot));
-                            }
-                        }
+                        float testPointX = playerX + eyeX * distanceToWall;
+                        float testPointY = playerX + eyeY * distanceToWall;
 
-                        // sort pairs from closest to farthest
-                        sort(p.begin(), p.end(), [](const pair<float, float>& left, const pair<float, float>& right) { return left.first < right.first; });
+                        float testAngle = atan2f((testPointY - blockMidY), (testPointX - blockMidX));
 
-                        float bound = 0.01f;
-                        if (acos(p.at(0).second) < bound) boundary = true;
-                        if (acos(p.at(1).second) < bound) boundary = true;
-                        //if (acos(p.at(2).second) < bound) boundary = true;
+                        if (testAngle >= -3.14159f * 0.25f && testAngle < 3.14159f * 0.25f)
+                            sampleX = testPointY - (float)testY;
+                        if (testAngle >= 3.14159f * 0.25f && testAngle < 3.14159f * 0.75f)
+                            sampleX = testPointX - (float)testX;
+                        if (testAngle < -3.14159f * 0.25f && testAngle >= -3.14159f * 0.75f)
+                            sampleX = testPointX - (float)testX;
+                        if (testAngle >= 3.14159f * 0.75f || testAngle < -3.14159f * 0.75f)
+                            sampleX = testPointY - (float)testY;
                     }
                 }
             }
@@ -183,21 +183,6 @@ public:
             // calculate distance to ceiling and floor
             int ceiling = (float)(ScreenHeight() / 2.0) - ScreenHeight() / ((float)distanceToWall);
             int floor = ScreenHeight() - ceiling;
-
-            // calculate wall distance
-            short shade = ' ';
-
-            if (distanceToWall <= depth / 4.0f)         shade = 0x2588; // close
-            else if (distanceToWall < depth / 3.0f)     shade = 0x2593;
-            else if (distanceToWall < depth / 2.0f)     shade = 0x2592;
-            else if (distanceToWall < depth)            shade = 0x2591;
-            else                                        shade = ' ';    // far away
-
-            // shade boundary
-            if (boundary)
-            {
-                shade = ' ';
-            }
 
             for (int y = 0; y < ScreenHeight(); y++)
             {
@@ -207,18 +192,19 @@ public:
                 }
                 else if (y > ceiling&& y <= floor)
                 {
-                    Draw(x, y, shade);
+                    if (distanceToWall < depth)
+                    {
+                        float sampleY = ((float)y - (float)ceiling) / ((float)floor - (float)ceiling);
+                        Draw(x, y, spriteWall->SampleGlyph(sampleX, sampleY), spriteWall->SampleColour(sampleX, sampleY));
+                    }
+                    else
+                    {
+                        Draw(x, y, PIXEL_SOLID, 0);
+                    }
                 }
                 else
                 {
-                    float b = 1.0f - (((float)y - ScreenHeight() / 2.0f) / ((float)ScreenHeight() / 2.0f));
-                    if (b < 0.25) shade = '#';
-                    else if (b < 0.25) shade = 'x';
-                    else if (b < 0.75) shade = '.';
-                    else if (b < 0.9) shade = '-';
-                    else shade = ' ';
-
-                    Draw(x, y, shade);
+                    Draw(x, y, PIXEL_SOLID, FG_DARK_GREEN);
                 }
             }
         }
@@ -254,6 +240,19 @@ private:
     float speed = 5.0f;
 
     wstring map;
+
+    olcSprite *spriteWall;
+    olcSprite *spriteLamp;
+    olcSprite *spriteFireball;
+
+    struct sObject
+    {
+        float x;
+        float y;
+        olcSprite *sprite;
+    };
+
+    list<sObject> listObjects;
 };
 
 int main()
